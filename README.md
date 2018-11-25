@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/Kvitral/scala-money-store.svg?branch=master)](https://travis-ci.org/Kvitral/scala-money-store)
+[![Build Status](https://travis-ci.org/Kvitral/money-transfer.svg?branch=master)](https://travis-ci.org/Kvitral/money-transfer)
 # Money transfer service
 
 ### API
