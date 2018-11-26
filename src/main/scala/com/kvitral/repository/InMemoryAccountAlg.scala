@@ -23,23 +23,27 @@ class InMemoryAccountAlg[F[_]: Monad](accountState: Ref[F, Map[Long, Account]], 
       _ <- logger.info(s"result of transaction is ${trResult.toString}")
     } yield trResult
 
-  private def performTransaction(t: Transaction, state: Map[Long, Account]) =
-    state
-      .get(t.from)
-      .fold((state, Either.left[AccountServiceErrors, Unit](AccountNotFound))) { accFrom =>
-        if (accFrom.balance < t.amount)
-          (state, Either.left[AccountServiceErrors, Unit](InsufficientBalance))
-        else {
-          state
-            .get(t.to)
-            .fold(state, Either.left[AccountServiceErrors, Unit](AccountNotFound)) { accTo =>
-              val res = state
-                .updated(accFrom.id, accFrom.copy(balance = accFrom.balance - t.amount))
-                .updated(accTo.id, accTo.copy(balance = accTo.balance + t.amount))
-              (res, Either.right[AccountServiceErrors, Unit](()))
-            }
-        }
-      }
+  private def performTransaction(
+      t: Transaction,
+      state: Map[Long, Account]): (Map[Long, Account], Either[AccountServiceErrors, Unit]) = {
+
+    val finishedTransaction = for {
+      accountFrom <- Either
+        .fromOption(state.get(t.from), AccountNotFound)
+        .filterOrElse(_.balance >= t.amount, InsufficientBalance)
+
+      accountTo <- Either.fromOption(state.get(t.to), AccountNotFound)
+    } yield {
+      state
+        .updated(accountFrom.id, accountFrom.copy(balance = accountFrom.balance - t.amount))
+        .updated(accountTo.id, accountTo.copy(balance = accountTo.balance + t.amount))
+    }
+
+    finishedTransaction match {
+      case Left(x) => (state, Left(x))
+      case Right(updatedState) => (updatedState, Right(()))
+    }
+  }
 
 }
 
