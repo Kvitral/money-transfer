@@ -38,7 +38,7 @@ object Server {
       accountService = AccountService[Task](inMemoryAccountAlg, accountServiceLogger)
       accountEndpoint = AccountEndpoint[Task](accountService)
       _ <- appLogger.info("starting server")
-      route <- accountEndpoint.getAccountRoute
+      route <- accountEndpoint.accountsRoute
       _ <- appLogger.info("gettingRoutes")
       _ <- Task.deferFuture(Http().bindAndHandle(route, "localhost", 8080))
     } yield ()

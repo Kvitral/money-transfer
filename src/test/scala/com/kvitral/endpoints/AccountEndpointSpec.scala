@@ -37,14 +37,14 @@ class AccountEndpointSpec
       } yield accountEndpoint
   }
 
-  "AccountEndpoint.getAccounts" should "return existing account" in new mix {
+  "GET AccountEndpoint.accounts" should "return existing account" in new mix {
     runTask(
       for {
         acc <- getRoutes
-        routes <- acc.getAccountRoute
+        routes <- acc.accountsRoute
 
       } yield
-        Get("/getAccounts?accountId=1") ~> routes ~> check {
+        Get("/accounts?id=1") ~> routes ~> check {
           responseAs[Account] shouldEqual Account(1L, 500d, RUB)
         })
   }
@@ -53,23 +53,23 @@ class AccountEndpointSpec
     runTask(
       for {
         acc <- getRoutes
-        routes <- acc.getAccountRoute
+        routes <- acc.accountsRoute
       } yield
-        Get("/getAccounts?accountId=-1") ~> routes ~> check {
+        Get("/accounts?id=-1") ~> routes ~> check {
           responseAs[ErrorMessage] shouldEqual ErrorMessage(
             s"Couldn`t find account with id -1",
             AccountNotFound)
         })
   }
 
-  "AccountEndpoint.transfer" should "change balances according to input" in new mix {
+  "POST AccountEndpoint.accounts" should "change balances according to input" in new mix {
     val transaction = Transaction(1, 2, 100, RUB)
     val transactionEntity: MessageEntity = Marshal(transaction).to[MessageEntity].futureValue
-    val request: HttpRequest = Post("/transfer").withEntity(transactionEntity)
+    val request: HttpRequest = Post("/accounts").withEntity(transactionEntity)
     runTask(
       for {
         acc <- getRoutes
-        routes <- acc.getAccountRoute
+        routes <- acc.accountsRoute
 
       } yield
         request ~> routes ~> check {
@@ -80,11 +80,11 @@ class AccountEndpointSpec
   it should "return error message if something is wrong" in new mix {
     val transaction = Transaction(-1, 1, 100, RUB)
     val transactionEntity: MessageEntity = Marshal(transaction).to[MessageEntity].futureValue
-    val request: HttpRequest = Post("/transfer").withEntity(transactionEntity)
+    val request: HttpRequest = Post("/accounts").withEntity(transactionEntity)
     runTask(
       for {
         acc <- getRoutes
-        routes <- acc.getAccountRoute
+        routes <- acc.accountsRoute
 
       } yield
         request ~> routes ~> check {

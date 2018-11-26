@@ -15,17 +15,15 @@ class AccountEndpoint[F[_]: Monad: EffectToRoute](accountService: AccountService
 
   private val effectToRoute: EffectToRoute[F] = implicitly[EffectToRoute[F]]
 
-  val getAccountRoute: F[Route] = (path("getAccounts") {
+  val accountsRoute: F[Route] = path("accounts") {
     get {
-      parameters('accountId.as[Long]) { id =>
+      parameters('id.as[Long]) { id =>
         val res = accountService
           .getAccount(id)
           .map(_.left.map(err => ErrorMessage(s"Couldn`t find account with id $id", err)))
         effectToRoute.toRoute(res)
       }
-    }
-  } ~ path("transfer") {
-    post {
+    } ~ post {
       entity(as[Transaction]) { tr =>
         val res = accountService
           .changeBalance(tr)
@@ -37,7 +35,7 @@ class AccountEndpoint[F[_]: Monad: EffectToRoute](accountService: AccountService
         effectToRoute.toRoute(res)
       }
     }
-  }).pure[F]
+  }.pure[F]
 
 }
 

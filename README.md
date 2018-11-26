@@ -6,16 +6,18 @@
 
 #### getAccounts
 *Method* : GET
-*Path*: /getAccounts
+
+*Path*: /accounts
 
   Parameter | Description
 ------------ | -------------
-accountId | Id of account
+id | Id of account
 
 
 #### transfer
 *Method*: POST
-*Path*: /getAccounts
+
+*Path*: /accounts
 
 *Entity Type* : JSON
 
