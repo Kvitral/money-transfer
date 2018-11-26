@@ -40,7 +40,7 @@ class InMemoryAccountAlg[F[_]: Monad](accountState: Ref[F, Map[Long, Account]], 
     }
 
     finishedTransaction match {
-      case Left(x) => (state, Left(x))
+      case Left(error) => (state, Left(error))
       case Right(updatedState) => (updatedState, Right(()))
     }
   }
