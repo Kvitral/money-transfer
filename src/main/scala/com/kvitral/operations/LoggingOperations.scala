@@ -1,6 +1,6 @@
-package com.kvitral.algebras
+package com.kvitral.operations
 
-trait Logging[F[_]] {
+trait LoggingOperations[F[_]] {
   def info(msg: => String): F[Unit]
 
   def error(msg: => String): F[Unit]

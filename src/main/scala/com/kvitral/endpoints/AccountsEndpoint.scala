@@ -5,15 +5,14 @@ import akka.http.scaladsl.server._
 import cats.Monad
 import cats.syntax.all._
 import com.kvitral.model.{ErrorMessage, Transaction}
-import com.kvitral.services.AccountService
+import com.kvitral.services.AccountsService
 import com.kvitral.transformers.EffectToRoute
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 
 import scala.language.higherKinds
 
-class AccountEndpoint[F[_]: Monad: EffectToRoute](accountService: AccountService[F]) {
-
-  private val effectToRoute: EffectToRoute[F] = implicitly[EffectToRoute[F]]
+class AccountsEndpoint[F[_]: Monad](accountService: AccountsService[F])(
+    implicit effectToRoute: EffectToRoute[F]) {
 
   val accountsRoute: F[Route] = path("accounts") {
     get {
@@ -39,7 +38,7 @@ class AccountEndpoint[F[_]: Monad: EffectToRoute](accountService: AccountService
 
 }
 
-object AccountEndpoint {
-  def apply[F[_]: Monad: EffectToRoute](accountService: AccountService[F]): AccountEndpoint[F] =
-    new AccountEndpoint(accountService)
+object AccountsEndpoint {
+  def apply[F[_]: Monad: EffectToRoute](accountService: AccountsService[F]): AccountsEndpoint[F] =
+    new AccountsEndpoint(accountService)
 }

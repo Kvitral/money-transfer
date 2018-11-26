@@ -3,37 +3,33 @@ package com.kvitral.endpoints
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{HttpRequest, MessageEntity}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import cats.effect.concurrent.Ref
 import com.kvitral.model.errors.AccountNotFound
 import com.kvitral.model.{Account, ErrorMessage, RUB, Transaction}
 import com.kvitral.repository._
-import com.kvitral.services.AccountService
+import com.kvitral.services.AccountsService
+import com.kvitral.utils.AccountsServiceUtils._
 import com.kvitral.utils.TaskRouteTest
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import monix.eval.Task
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{FlatSpec, Matchers}
 
-class AccountEndpointSpec
-  extends FlatSpec
+class AccountsEndpointSpec
+    extends FlatSpec
     with Matchers
     with ScalatestRouteTest
     with TaskRouteTest {
 
   trait mix {
-    val initMap: Map[Long, Account] = Map(
-      (1, Account(1L, 500d, RUB)),
-      (2, Account(2L, 100d, RUB))
-    )
 
-    def getRoutes: Task[AccountEndpoint[Task]] =
+    def getRoutes: Task[AccountsEndpoint[Task]] =
       for {
-        initStore <- Ref.of[Task, Map[Long, Account]](initMap)
+        initialAccountStore <- initialAccountsStateF[Task]
         inMemoryLogger = TaskLogger("InMemoryTest")
         accountServiceLogger = TaskLogger("AccountServiceLogger")
-        inMemoryAccountAlg = InMemoryAccountAlg[Task](initStore, inMemoryLogger)
-        accountService = AccountService[Task](inMemoryAccountAlg, accountServiceLogger)
-        accountEndpoint = AccountEndpoint[Task](accountService)
+        inMemoryAccountStore = InMemoryAccountStore[Task](initialAccountStore, inMemoryLogger)
+        accountService = AccountsService[Task](inMemoryAccountStore, accountServiceLogger)
+        accountEndpoint = AccountsEndpoint[Task](accountService)
       } yield accountEndpoint
   }
 
@@ -62,7 +58,7 @@ class AccountEndpointSpec
         })
   }
 
-  "POST AccountEndpoint.accounts" should "change balances according to input" in new mix {
+  "POST AccountEndpoint.accounts" should "return OK if valid data have been passed" in new mix {
     val transaction = Transaction(1, 2, 100, RUB)
     val transactionEntity: MessageEntity = Marshal(transaction).to[MessageEntity].futureValue
     val request: HttpRequest = Post("/accounts").withEntity(transactionEntity)

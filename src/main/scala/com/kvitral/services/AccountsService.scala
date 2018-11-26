@@ -1,15 +1,14 @@
 package com.kvitral.services
 
 import cats.Monad
-import cats.data.EitherT
 import cats.syntax.all._
-import com.kvitral.algebras.{AccountAlg, Logging}
 import com.kvitral.model.errors.{AccountNotFound, AccountServiceErrors}
 import com.kvitral.model.{Account, Transaction}
+import com.kvitral.operations.{AccountOperations, LoggingOperations}
 
 import scala.language.higherKinds
 
-class AccountService[F[_]: Monad](accRepo: AccountAlg[F], logger: Logging[F]) {
+class AccountsService[F[_]: Monad](accRepo: AccountOperations[F], logger: LoggingOperations[F]) {
 
   def getAccount(id: Long): F[Either[AccountNotFound.type, Account]] =
     for {
@@ -25,7 +24,9 @@ class AccountService[F[_]: Monad](accRepo: AccountAlg[F], logger: Logging[F]) {
 
 }
 
-object AccountService {
-  def apply[F[_]: Monad](accRepo: AccountAlg[F], logger: Logging[F]): AccountService[F] =
-    new AccountService(accRepo, logger)
+object AccountsService {
+  def apply[F[_]: Monad](
+      accRepo: AccountOperations[F],
+      logger: LoggingOperations[F]): AccountsService[F] =
+    new AccountsService(accRepo, logger)
 }

@@ -1,8 +1,8 @@
 package com.kvitral.model
 
 import io.circe.generic.extras.Configuration
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.extras.semiauto._
+import io.circe.{Decoder, Encoder}
 
 sealed trait Currency extends Product with Serializable
 

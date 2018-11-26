@@ -3,14 +3,14 @@ package com.kvitral.repository
 import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.syntax.all._
-import com.kvitral.algebras.{AccountAlg, Logging}
 import com.kvitral.model.errors.{AccountNotFound, AccountServiceErrors, InsufficientBalance}
 import com.kvitral.model.{Account, Transaction}
+import com.kvitral.operations.{AccountOperations, LoggingOperations}
 
 import scala.language.higherKinds
 
-class InMemoryAccountAlg[F[_]: Monad](accountState: Ref[F, Map[Long, Account]], logger: Logging[F])
-    extends AccountAlg[F] {
+class InMemoryAccountStore[F[_]: Monad](accountState: Ref[F, Map[Long, Account]], logger: LoggingOperations[F])
+    extends AccountOperations[F] {
 
   override def getAccount(i: Long): F[Option[Account]] =
     for {
@@ -47,9 +47,9 @@ class InMemoryAccountAlg[F[_]: Monad](accountState: Ref[F, Map[Long, Account]], 
 
 }
 
-object InMemoryAccountAlg {
+object InMemoryAccountStore {
   def apply[F[_]: Monad](
       accountState: Ref[F, Map[Long, Account]],
-      logger: Logging[F]): InMemoryAccountAlg[F] =
-    new InMemoryAccountAlg(accountState, logger)
+      logger: LoggingOperations[F]): InMemoryAccountStore[F] =
+    new InMemoryAccountStore(accountState, logger)
 }

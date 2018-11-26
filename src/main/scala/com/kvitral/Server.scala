@@ -4,10 +4,10 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import cats.effect.concurrent.Ref
-import com.kvitral.endpoints.AccountEndpoint
+import com.kvitral.endpoints.AccountsEndpoint
 import com.kvitral.model.{Account, RUB}
-import com.kvitral.repository.{InMemoryAccountAlg, TaskLogger}
-import com.kvitral.services.AccountService
+import com.kvitral.repository.{InMemoryAccountStore, TaskLogger}
+import com.kvitral.services.AccountsService
 import monix.eval.Task
 import monix.execution.Scheduler
 
@@ -19,8 +19,15 @@ object Server {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val scheduler: Scheduler = monix.execution.Scheduler.global
 
-  val initAccounts: Task[Ref[Task, Map[Long, Account]]] =
-    Ref.of(Map[Long, Account]((1, Account(1L, 500d, RUB)), (2, Account(2L, 100d, RUB))))
+  val initinalAccountsStoreTask: Task[Ref[Task, Map[Long, Account]]] =
+    Ref.of(
+      Map(
+        (1, Account(1L, 500d, RUB)),
+        (2, Account(2L, 100d, RUB)),
+        (3, Account(3L, 200d, RUB)),
+        (4, Account(3L, 300d, RUB)),
+        (5, Account(3L, 700d, RUB))
+      ))
 
   def main(args: Array[String]): Unit = {
 
@@ -28,15 +35,15 @@ object Server {
 
     val program = for {
       _ <- appLogger.info("initializing storage:")
-      initStorage <- initAccounts
+      initialAccountStore <- initinalAccountsStoreTask
       _ <- appLogger.info("initializing loggers:")
       inMemoryAccountLogger = TaskLogger("InMemoryAccountLogger")
       accountServiceLogger = TaskLogger("AccountService")
       _ <- appLogger.info("initializing algebras:")
-      inMemoryAccountAlg = InMemoryAccountAlg[Task](initStorage, inMemoryAccountLogger)
+      inMemoryAccountStore = InMemoryAccountStore[Task](initialAccountStore, inMemoryAccountLogger)
       _ <- appLogger.info("initializing services:")
-      accountService = AccountService[Task](inMemoryAccountAlg, accountServiceLogger)
-      accountEndpoint = AccountEndpoint[Task](accountService)
+      accountService = AccountsService[Task](inMemoryAccountStore, accountServiceLogger)
+      accountEndpoint = AccountsEndpoint[Task](accountService)
       _ <- appLogger.info("starting server")
       route <- accountEndpoint.accountsRoute
       _ <- appLogger.info("gettingRoutes")

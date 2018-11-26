@@ -1,10 +1,10 @@
 package com.kvitral.repository
 
-import com.kvitral.algebras.Logging
+import com.kvitral.operations.LoggingOperations
 import monix.eval.Task
 import org.slf4j.LoggerFactory
 
-class TaskLogger(name: String) extends Logging[Task] {
+class TaskLogger(name: String) extends LoggingOperations[Task] {
 
   private val logger = LoggerFactory.getLogger(name)
 
