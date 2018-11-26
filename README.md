@@ -4,7 +4,7 @@
 
 ### API
 
-#### getAccounts
+#### accounts
 *Method* : GET
 
 *Path*: /accounts
@@ -14,7 +14,7 @@
 id | Id of account
 
 
-#### transfer
+#### accounts
 *Method*: POST
 
 *Path*: /accounts
