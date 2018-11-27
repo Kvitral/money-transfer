@@ -25,8 +25,8 @@ object Server {
         (1, Account(1L, 500d, RUB)),
         (2, Account(2L, 100d, RUB)),
         (3, Account(3L, 200d, RUB)),
-        (4, Account(3L, 300d, RUB)),
-        (5, Account(3L, 700d, RUB))
+        (4, Account(4L, 300d, RUB)),
+        (5, Account(5L, 700d, RUB))
       ))
 
   def main(args: Array[String]): Unit = {

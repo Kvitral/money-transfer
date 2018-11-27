@@ -1,15 +1,23 @@
 package com.kvitral.repository
 
 import cats.Monad
+import cats.data.EitherT
 import cats.effect.concurrent.Ref
 import cats.syntax.all._
-import com.kvitral.model.errors.{AccountNotFound, AccountServiceErrors, InsufficientBalance}
+import com.kvitral.model.errors.{
+  AccountNotFound,
+  AccountServiceErrors,
+  AccountsAreTheSame,
+  InsufficientBalance
+}
 import com.kvitral.model.{Account, Transaction}
 import com.kvitral.operations.{AccountOperations, LoggingOperations}
 
 import scala.language.higherKinds
 
-class InMemoryAccountStore[F[_]: Monad](accountState: Ref[F, Map[Long, Account]], logger: LoggingOperations[F])
+class InMemoryAccountStore[F[_]: Monad](
+    accountState: Ref[F, Map[Long, Account]],
+    logger: LoggingOperations[F])
     extends AccountOperations[F] {
 
   override def getAccount(i: Long): F[Option[Account]] =
@@ -17,11 +25,16 @@ class InMemoryAccountStore[F[_]: Monad](accountState: Ref[F, Map[Long, Account]]
       account <- accountState.get
     } yield account.get(i)
 
-  override def changeBalance(transaction: Transaction): F[Either[AccountServiceErrors, Unit]] =
-    for {
-      trResult <- accountState.modify(state => performTransaction(transaction, state))
-      _ <- logger.info(s"result of transaction is ${trResult.toString}")
+  override def changeBalance(transaction: Transaction): F[Either[AccountServiceErrors, Unit]] = {
+    val transactionResult: EitherT[F, AccountServiceErrors, Unit] = for {
+      _ <- validateAccountsIdsEquality(transaction)
+      trResult <- EitherT(accountState.modify(state => performTransaction(transaction, state)))
+      _ <- EitherT.liftF[F, AccountServiceErrors, Unit](
+        logger.info(s"result of transaction is ${trResult.toString}"))
     } yield trResult
+
+    transactionResult.value
+  }
 
   private def performTransaction(
       t: Transaction,
@@ -44,6 +57,10 @@ class InMemoryAccountStore[F[_]: Monad](accountState: Ref[F, Map[Long, Account]]
       case Right(updatedState) => (updatedState, Right(()))
     }
   }
+
+  private def validateAccountsIdsEquality(
+      transaction: Transaction): EitherT[F, AccountsAreTheSame.type, Unit] =
+    EitherT.cond(transaction.from != transaction.to, (), AccountsAreTheSame)
 
 }
 

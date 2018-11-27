@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import cats.Monad
 import cats.syntax.all._
-import com.kvitral.model.{ErrorMessage, Transaction}
+import com.kvitral.model.{ErrorMessage, SuccessMessage, Transaction}
 import com.kvitral.services.AccountsService
 import com.kvitral.transformers.EffectToRoute
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -29,7 +29,7 @@ class AccountsEndpoint[F[_]: Monad](accountService: AccountsService[F])(
           .map(
             _.left
               .map(err => ErrorMessage("something went wrong", err))
-              .map(_ => "OK"))
+              .map(_ => SuccessMessage("OK")))
 
         effectToRoute.toRoute(res)
       }

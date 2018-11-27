@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.{HttpRequest, MessageEntity}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.kvitral.model.errors.AccountNotFound
-import com.kvitral.model.{Account, ErrorMessage, RUB, Transaction}
+import com.kvitral.model._
 import com.kvitral.repository._
 import com.kvitral.services.AccountsService
 import com.kvitral.utils.AccountsServiceUtils._
@@ -70,7 +70,7 @@ class AccountsEndpointSpec
       } yield
         request ~> routes ~> check {
 
-          responseAs[String] shouldEqual "OK"
+          responseAs[SuccessMessage] shouldEqual SuccessMessage("OK")
         })
   }
   it should "return error message if something is wrong" in new mix {
