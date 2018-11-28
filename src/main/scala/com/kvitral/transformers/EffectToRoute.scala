@@ -7,6 +7,8 @@ import cats.Id
 import monix.eval.Task
 import monix.execution.Scheduler
 
+import scala.language.higherKinds
+
 trait EffectToRoute[F[_]] {
   def toRoute[A: ToResponseMarshaller](fa: F[A]): StandardRoute
 }
@@ -17,10 +19,11 @@ object EffectToRoute {
   implicit def toRoute[F[_], A: ToResponseMarshaller](
       implicit effectToRoute: EffectToRoute[F]): EffectToRoute[F] = effectToRoute
 
-  implicit def convertTask(implicit s: Scheduler): EffectToRoute[Task] = new EffectToRoute[Task] {
-    override def toRoute[A: ToResponseMarshaller](fa: Task[A]): StandardRoute =
-      complete(fa.runToFuture(s))
-  }
+  implicit def convertTask(implicit scheduler: Scheduler): EffectToRoute[Task] =
+    new EffectToRoute[Task] {
+      override def toRoute[A: ToResponseMarshaller](fa: Task[A]): StandardRoute =
+        complete(fa.runToFuture(scheduler))
+    }
 
   implicit val convertId: EffectToRoute[Id] = new EffectToRoute[Id] {
     override def toRoute[A: ToResponseMarshaller](fa: Id[A]): StandardRoute = complete(fa)

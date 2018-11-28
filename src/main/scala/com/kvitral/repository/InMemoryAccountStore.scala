@@ -29,8 +29,6 @@ class InMemoryAccountStore[F[_]: Monad](
     val transactionResult: EitherT[F, AccountServiceErrors, Unit] = for {
       _ <- validateAccountsIdsEquality(transaction)
       trResult <- EitherT(accountState.modify(state => performTransaction(transaction, state)))
-      _ <- EitherT.liftF[F, AccountServiceErrors, Unit](
-        logger.info(s"result of transaction is ${trResult.toString}"))
     } yield trResult
 
     transactionResult.value

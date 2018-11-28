@@ -20,6 +20,7 @@ class AccountsService[F[_]: Monad](accRepo: AccountOperations[F], logger: Loggin
     for {
       _ <- logger.info(s"changing balance with transaction $transaction")
       after <- accRepo.changeBalance(transaction)
+      _ <- logger.info(s"transaction result is $after")
     } yield after
 
 }
