@@ -47,3 +47,28 @@ curl -X POST \
 	"currency":"RUB"
 }'
 ~~~
+
+### Gatling
+
+Simple load test which performs transaction in parallel
+to ensure that in-memory store working as expected.
+
+Main goal is to perform transaction and "reverse" transaction so that
+system will end up to it original state.
+
+Because of that behavior we don`t transfer big amount of money
+which can bring us to insufficient balance exceptions.
+
+It is possible that 2 account id will match each other and it will end
+up with request failure. It is desirable behavior.
+
+To run in simply write in sbt console:
+~~~
+gatling-it:test
+~~~
+
+Notice
+that if you run this test locally inside your idea project with server running
+you will end up with very small rps rate but still it will to the job.
+
+
