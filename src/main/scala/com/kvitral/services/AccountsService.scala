@@ -1,7 +1,8 @@
 package com.kvitral.services
 
 import cats.Monad
-import cats.syntax.all._
+import cats.syntax.functor._
+import cats.syntax.flatMap._
 import com.kvitral.model.errors.{AccountNotFound, AccountServiceErrors}
 import com.kvitral.model.{Account, Transaction}
 import com.kvitral.operations.{AccountOperations, LoggingOperations}

@@ -3,7 +3,8 @@ package com.kvitral.repository
 import cats.Monad
 import cats.data.EitherT
 import cats.effect.concurrent.Ref
-import cats.syntax.all._
+import cats.syntax.either._
+import cats.syntax.functor._
 import com.kvitral.model.errors.{
   AccountNotFound,
   AccountServiceErrors,

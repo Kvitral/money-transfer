@@ -3,7 +3,8 @@ package com.kvitral.endpoints
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import cats.Monad
-import cats.syntax.all._
+import cats.syntax.functor._
+import cats.syntax.applicative._
 import com.kvitral.model.{ErrorMessage, SuccessMessage, Transaction}
 import com.kvitral.services.AccountsService
 import com.kvitral.transformers.EffectToRoute
