@@ -14,6 +14,8 @@ case object InsufficientBalance extends AccountServiceErrors
 
 case object AccountsAreTheSame extends AccountServiceErrors
 
+case object NegativeAmount extends AccountServiceErrors
+
 object ServiceErrors {
   private implicit val conf: Configuration = Configuration.default
   implicit val serviceErrorEncoder: Encoder[ServiceErrors] = deriveEnumerationEncoder

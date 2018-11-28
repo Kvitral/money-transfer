@@ -5,12 +5,7 @@ import cats.data.EitherT
 import cats.effect.concurrent.Ref
 import cats.syntax.either._
 import cats.syntax.functor._
-import com.kvitral.model.errors.{
-  AccountNotFound,
-  AccountServiceErrors,
-  AccountsAreTheSame,
-  InsufficientBalance
-}
+import com.kvitral.model.errors._
 import com.kvitral.model.{Account, Transaction}
 import com.kvitral.operations.{AccountOperations, LoggingOperations}
 
@@ -28,7 +23,7 @@ class InMemoryAccountStore[F[_]: Monad](
 
   override def changeBalance(transaction: Transaction): F[Either[AccountServiceErrors, Unit]] = {
     val transactionResult: EitherT[F, AccountServiceErrors, Unit] = for {
-      _ <- validateAccountsIdsEquality(transaction)
+      _ <- validateTransaction(transaction)
       trResult <- EitherT(accountState.modify(state => performTransaction(transaction, state)))
     } yield trResult
 
@@ -57,9 +52,12 @@ class InMemoryAccountStore[F[_]: Monad](
     }
   }
 
-  private def validateAccountsIdsEquality(
-      transaction: Transaction): EitherT[F, AccountsAreTheSame.type, Unit] =
-    EitherT.cond(transaction.from != transaction.to, (), AccountsAreTheSame)
+  private def validateTransaction(
+      transaction: Transaction): EitherT[F, AccountServiceErrors, Unit] =
+    for {
+      _ <- EitherT.cond(transaction.from != transaction.to, (), AccountsAreTheSame)
+      _ <- EitherT.cond(transaction.amount > 0, (), NegativeAmount: AccountServiceErrors)
+    } yield ()
 
 }
 

@@ -2,7 +2,7 @@ package com.kvitral.repository
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.effect.concurrent.Ref
-import com.kvitral.model.errors.{AccountServiceErrors, AccountsAreTheSame, InsufficientBalance}
+import com.kvitral.model.errors.{AccountServiceErrors, AccountsAreTheSame, InsufficientBalance, NegativeAmount}
 import com.kvitral.model.{Account, RUB, Transaction}
 import com.kvitral.utils.AccountsServiceUtils._
 import com.kvitral.utils.TaskRouteTest
@@ -83,6 +83,18 @@ class InMemoryAccountStoreSpec
       afterUpdateState <- accountsState.get
     } yield {
       res shouldEqual Left(AccountsAreTheSame)
+    })
+  }
+
+  it should "return NegativeAmount if passed amount is negative" in new mix {
+    val transaction = Transaction(1, 2, BigDecimal(-1), RUB)
+    runTask(for {
+      accountsState <- initialAccountsStateF[Task]
+      inmemory <- inMemoryAccountsStore(accountsState)
+      res <- inmemory.changeBalance(transaction)
+      afterUpdateState <- accountsState.get
+    } yield {
+      res shouldEqual Left(NegativeAmount)
     })
   }
 
